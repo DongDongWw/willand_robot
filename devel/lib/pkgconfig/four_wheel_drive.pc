@@ -1,8 +1,0 @@
-prefix=/home/navii/willand_robot/devel
-
-Name: four_wheel_drive
-Description: Description of four_wheel_drive
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 
