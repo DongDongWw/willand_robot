@@ -1,0 +1,2 @@
+four_wheel_drive
+-DPYTHON_EXECUTABLE=/usr/bin/python3 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCATKIN_DEVEL_PREFIX=/home/navii/willand_robot/devel -DCMAKE_INSTALL_PREFIX=/home/navii/willand_robot/install -G Unix Makefiles
