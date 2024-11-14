@@ -158,14 +158,6 @@ private:
     u_lb_ = u_lb;
     u_ub_ = u_ub;
   }
-  inline void
-  setUserCustomizedConstraints(const UserCustomizeMatrixCaster &matrix_caster,
-                               const UserCustomizeBoundCaster &bound_caster) {
-    P_customize_ = matrix_caster(param_, refer_state_seq_, refer_input_seq_);
-    DMatrix bound = bound_caster(param_, refer_state_seq_, refer_input_seq_);
-    lb_customize_ = bound.col(0);
-    ub_customize_ = bound.col(1);
-  }
   bool setReferenceTrajectory(const Trajectory2D &refer_traj);
   void CastProblemToQpForm();
 
@@ -180,11 +172,12 @@ public:
             const DMatrix &A_inequal, const DMatrix &B_inequal,
             const DVector &K_inequal_lb, const DVector &K_inequal_ub,
             const DVector &x_lb, const DVector &x_ub, const DVector &u_lb,
-            const DVector &u_ub,
-            const UserCustomizeMatrixCaster &user_customized_matrix_caster,
-            const UserCustomizeBoundCaster &user_customized_bound_caster,
-            const DVector &init_state, const Trajectory2D &reference_traj);
+            const DVector &u_ub, const DVector &init_state,
+            const Trajectory2D &reference_traj);
   bool solve(DVector &solution);
+  void
+  addUserCustomizedConstraints(const UserCustomizeMatrixCaster &matrix_caster,
+                               const UserCustomizeBoundCaster &bound_caster);
   void printRefereceStateSeq();
   void printRefereceInputSeq();
 };

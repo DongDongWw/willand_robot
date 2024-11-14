@@ -14,7 +14,7 @@
 using namespace willand_ackermann;
 
 int main() {
-  const int horizon = 20;                                   // duration = 4 secs
+  const int horizon = 40;                                   // duration = 8 secs
   const double interval = 0.2;                              // unit, sec
   const int state_size = 4;                                 // (x, y, theta, v)
   const int input_size = 2;                                 // (omega, acc)
@@ -86,7 +86,7 @@ int main() {
   u_ub << std::numeric_limits<double>::infinity(), acc_limit;
 
   init_state.resize(state_size);
-  init_state << 5, 0, M_PI_2, 0;
+  init_state << 0, 0, 0, 0;
   // funciton mapping parameters to discrete linear matrix
   auto dynamic_state_matrix_caster =
       [](const TrackerParam &param, const TrajectoryTracker::DVector &x_refer,
@@ -327,8 +327,9 @@ int main() {
                      dynamic_input_matrix_caster, dynamic_vector_caster,
                      A_equal, B_equal, K_equal, A_inequal, B_inequal,
                      K_inequal_lb, K_inequal_ub, x_lb, x_ub, u_lb, u_ub,
-                     steer_rate_cons_matrix_caster,
-                     steer_rate_cons_bound_caster, init_state, refer_traj);
+                     init_state, refer_traj);
+  traj_tracker->addUserCustomizedConstraints(steer_rate_cons_matrix_caster,
+                                             steer_rate_cons_bound_caster);
   TrajectoryTracker::DVector solution;
   traj_tracker->solve(solution);
 
@@ -343,7 +344,7 @@ int main() {
               << ", planning state = " << x.transpose().format(CleanFmt)
               << ", error = " << dist << std::endl;
   }
-  traj_tracker->printRefereceStateSeq();
+  // traj_tracker->printRefereceStateSeq();
   // traj_tracker->printRefereceInputSeq();
   // traj_tracker->printOsqpMatrices();
 }

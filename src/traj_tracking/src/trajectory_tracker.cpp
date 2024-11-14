@@ -25,18 +25,18 @@ TrajectoryTracker::TrajectoryTracker(const TrackerParam &param)
   g_.resize(qp_state_size_);
 };
 
-bool TrajectoryTracker::init(
-    const DMatrix &Q, const DMatrix &R,
-    const MatrixCaster &dynamic_state_matrix_caster,
-    const MatrixCaster &dynamic_input_matrix_caster,
-    const VectorCaster &dynamic_vector_caster, const DMatrix &A_equal,
-    const DMatrix &B_equal, const DVector &K_equal, const DMatrix &A_inequal,
-    const DMatrix &B_inequal, const DVector &K_inequal_lb,
-    const DVector &K_inequal_ub, const DVector &x_lb, const DVector &x_ub,
-    const DVector &u_lb, const DVector &u_ub,
-    const UserCustomizeMatrixCaster &user_customized_matrix_caster,
-    const UserCustomizeBoundCaster &user_customized_bound_caster,
-    const DVector &init_state, const Trajectory2D &refer_traj) {
+bool TrajectoryTracker::init(const DMatrix &Q, const DMatrix &R,
+                             const MatrixCaster &dynamic_state_matrix_caster,
+                             const MatrixCaster &dynamic_input_matrix_caster,
+                             const VectorCaster &dynamic_vector_caster,
+                             const DMatrix &A_equal, const DMatrix &B_equal,
+                             const DVector &K_equal, const DMatrix &A_inequal,
+                             const DMatrix &B_inequal,
+                             const DVector &K_inequal_lb,
+                             const DVector &K_inequal_ub, const DVector &x_lb,
+                             const DVector &x_ub, const DVector &u_lb,
+                             const DVector &u_ub, const DVector &init_state,
+                             const Trajectory2D &refer_traj) {
 
   if (!setInitialState(init_state)) {
     std::cout << "Invalid initial state!" << std::endl;
@@ -56,8 +56,6 @@ bool TrajectoryTracker::init(
   setGeneralInequalityConstraints(A_inequal, B_inequal, K_inequal_lb,
                                   K_inequal_ub);
   setGeneralBoundBoxConstraints(x_lb, x_ub, u_lb, u_ub);
-  setUserCustomizedConstraints(user_customized_matrix_caster,
-                               user_customized_bound_caster);
   // cast everything need
   CastProblemToQpForm();
   return true;
@@ -397,6 +395,25 @@ bool TrajectoryTracker::setReferenceTrajectory(const Trajectory2D &refer_traj) {
   // the first input vector is not yet be calculated
   refer_input_seq_.front() = refer_input_seq_.at(1);
   return true;
+}
+void TrajectoryTracker::addUserCustomizedConstraints(
+    const UserCustomizeMatrixCaster &matrix_caster,
+    const UserCustomizeBoundCaster &bound_caster) {
+  DMatrix m = matrix_caster(param_, refer_state_seq_, refer_input_seq_);
+  DMatrix b = bound_caster(param_, refer_state_seq_, refer_input_seq_);
+  if (P_customize_.rows() != 0) {
+    P_customize_.conservativeResize(P_customize_.rows() + m.rows(),
+                                    P_customize_.cols());
+    lb_customize_.conservativeResize(lb_customize_.rows() + b.rows());
+    ub_customize_.conservativeResize(ub_customize_.rows() + b.rows());
+  } else {
+    P_customize_.resize(m.rows(), m.cols());
+    lb_customize_.resize(b.rows());
+    ub_customize_.resize(b.rows());
+  }
+  P_customize_.bottomRows(m.rows()) = m;
+  lb_customize_.tail(b.rows()) = b.col(0);
+  ub_customize_.tail(b.rows()) = b.col(1);
 }
 void TrajectoryTracker::printRefereceStateSeq() {
   Eigen::IOFormat CleanFmt(4, Eigen::DontAlignCols, ", ", "", "(", ")");
