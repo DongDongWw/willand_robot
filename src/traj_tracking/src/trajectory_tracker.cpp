@@ -357,10 +357,15 @@ bool TrajectoryTracker::setReferenceTrajectory(const Trajectory2D &refer_traj) {
     refer_state.segment(0, 2) = refer_traj.at(i);
     double delta_x = refer_traj.at(i + 1)(0) - refer_traj.at(i)(0);
     double delta_y = refer_traj.at(i + 1)(1) - refer_traj.at(i)(1);
-    refer_state(2) = std::atan(delta_y / (delta_x + kEps));
-    refer_state(2) = delta_x > 0 ? refer_state(2)
-                                 : delta_y > 0 ? refer_state(2) + M_PI
-                                               : refer_state(2) - M_PI;
+    double yaw = std::atan(delta_y / (delta_x + kEps));
+    yaw = delta_x > 0 ? yaw : delta_y > 0 ? yaw + M_PI : yaw - M_PI;
+    // avoid the yaw angle jump
+    if (i > 0) {
+      double delta_yaw = yaw - refer_state_seq_.at(i - 1)(2);
+      int r = std::round(-delta_yaw / (2 * M_PI));
+      yaw += r * 2 * M_PI;
+    }
+    refer_state(2) = yaw;
     refer_state(3) =
         std::sqrt(delta_x * delta_x + delta_y * delta_y) / param_.interval_;
   }

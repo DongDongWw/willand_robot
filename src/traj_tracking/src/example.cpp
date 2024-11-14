@@ -77,9 +77,11 @@ int main() {
   x_lb.resize(state_size);
   x_ub.resize(state_size);
   x_lb << -std::numeric_limits<double>::infinity(),
-      -std::numeric_limits<double>::infinity(), -M_PI, -speed_limit;
+      -std::numeric_limits<double>::infinity(),
+      -std::numeric_limits<double>::infinity(), -speed_limit;
   x_ub << +std::numeric_limits<double>::infinity(),
-      +std::numeric_limits<double>::infinity(), +M_PI, speed_limit;
+      +std::numeric_limits<double>::infinity(),
+      +std::numeric_limits<double>::infinity(), speed_limit;
   u_lb.resize(input_size);
   u_ub.resize(input_size);
   u_lb << -std::numeric_limits<double>::infinity(), -acc_limit;
