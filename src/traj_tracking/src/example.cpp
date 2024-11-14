@@ -124,13 +124,13 @@ int main() {
     int state_size = param.state_size_;
     int input_size = param.input_size_;
     double interval = param.interval_;
-    double theta = x_refer(2), v = x_refer(3), omege = u_refer(0),
+    double theta = x_refer(2), v = x_refer(3), omega = u_refer(0),
            acc = u_refer(1);
     TrajectoryTracker::DVector x_dot(state_size);
     TrajectoryTracker::DMatrix partial_x(state_size, state_size);
     TrajectoryTracker::DMatrix partial_u(input_size, state_size);
 
-    x_dot << v * std::cos(theta), v * std::sin(theta), omege, acc;
+    x_dot << v * std::cos(theta), v * std::sin(theta), omega, acc;
     partial_x << 0, 0, 0, 0, 0, 0, 0, 0, -v * std::sin(theta),
         v * std::cos(theta), 0, 0, std::cos(theta), std::sin(theta), 0, 0;
     partial_u << 0, 0, 1, 0, 0, 0, 0, 1;
@@ -163,28 +163,28 @@ int main() {
                              std::pow(2 * v_0 - track_width * omega_0, 2),
              partial_g_v_1 = -(4 * dist_front_to_rear * omega_1) /
                              std::pow(2 * v_1 - track_width * omega_1, 2),
-             partial_g_omege_0 = (4 * dist_front_to_rear * v_0) /
+             partial_g_omega_0 = (4 * dist_front_to_rear * v_0) /
                                  std::pow(2 * v_0 - track_width * omega_0, 2),
-             partial_g_omege_1 = (4 * dist_front_to_rear * v_1) /
+             partial_g_omega_1 = (4 * dist_front_to_rear * v_1) /
                                  std::pow(2 * v_1 - track_width * omega_1, 2);
       double partial_h_v_0 =
-                 (std::pow(g_1, 2) * partial_g_v_0 + partial_g_v_0) /
+                 -(std::pow(g_1, 2) * partial_g_v_0 + partial_g_v_0) /
                  std::pow(1 + g_1 * g_0, 2),
              partial_h_v_1 =
                  (std::pow(g_0, 2) * partial_g_v_1 + partial_g_v_1) /
                  std::pow(1 + g_1 * g_0, 2),
-             partial_h_omege_0 =
-                 (std::pow(g_1, 2) * partial_g_omege_0 + partial_g_omege_0) /
+             partial_h_omega_0 =
+                 -(std::pow(g_1, 2) * partial_g_omega_0 + partial_g_omega_0) /
                  std::pow(1 + g_1 * g_0, 2),
-             partial_h_omege_1 =
-                 (std::pow(g_0, 2) * partial_g_omege_1 + partial_g_omege_1) /
+             partial_h_omega_1 =
+                 (std::pow(g_0, 2) * partial_g_omega_1 + partial_g_omega_1) /
                  std::pow(1 + g_1 * g_0, 2);
       left_cons(i * state_size + 3) = partial_h_v_0;
       left_cons((i + 1) * state_size + 3) = partial_h_v_1;
       left_cons((horizon + 1) * state_size + i * input_size + 0) =
-          partial_g_omege_0;
+          partial_g_omega_0;
       left_cons((horizon + 1) * state_size + (i + 1) * input_size + 0) =
-          partial_g_omege_1;
+          partial_g_omega_1;
       P.row(2 * i) = left_cons.transpose();
     }
     for (size_t i = 0; i < horizon - 1; ++i) {
@@ -200,28 +200,28 @@ int main() {
                              std::pow(2 * v_0 + track_width * omega_0, 2),
              partial_g_v_1 = -(4 * dist_front_to_rear * omega_1) /
                              std::pow(2 * v_1 + track_width * omega_1, 2),
-             partial_g_omege_0 = (4 * dist_front_to_rear * v_0) /
+             partial_g_omega_0 = (4 * dist_front_to_rear * v_0) /
                                  std::pow(2 * v_0 + track_width * omega_0, 2),
-             partial_g_omege_1 = (4 * dist_front_to_rear * v_1) /
+             partial_g_omega_1 = (4 * dist_front_to_rear * v_1) /
                                  std::pow(2 * v_1 + track_width * omega_1, 2);
       double partial_h_v_0 =
-                 (std::pow(g_1, 2) * partial_g_v_0 + partial_g_v_0) /
+                 -(std::pow(g_1, 2) * partial_g_v_0 + partial_g_v_0) /
                  std::pow(1 + g_1 * g_0, 2),
              partial_h_v_1 =
                  (std::pow(g_0, 2) * partial_g_v_1 + partial_g_v_1) /
                  std::pow(1 + g_1 * g_0, 2),
-             partial_h_omege_0 =
-                 (std::pow(g_1, 2) * partial_g_omege_0 + partial_g_omege_0) /
+             partial_h_omega_0 =
+                 -(std::pow(g_1, 2) * partial_g_omega_0 + partial_g_omega_0) /
                  std::pow(1 + g_1 * g_0, 2),
-             partial_h_omege_1 =
-                 (std::pow(g_0, 2) * partial_g_omege_1 + partial_g_omege_1) /
+             partial_h_omega_1 =
+                 (std::pow(g_0, 2) * partial_g_omega_1 + partial_g_omega_1) /
                  std::pow(1 + g_1 * g_0, 2);
       right_cons(i * state_size + 3) = partial_h_v_0;
       right_cons((i + 1) * state_size + 3) = partial_h_v_1;
       right_cons((horizon + 1) * state_size + i * input_size + 0) =
-          partial_g_omege_0;
+          partial_g_omega_0;
       right_cons((horizon + 1) * state_size + (i + 1) * input_size + 0) =
-          partial_g_omege_1;
+          partial_g_omega_1;
       P.row(2 * i + 1) = right_cons.transpose();
     }
     return P;
@@ -249,25 +249,25 @@ int main() {
                              std::pow(2 * v_0 - track_width * omega_0, 2),
              partial_g_v_1 = -(4 * dist_front_to_rear * omega_1) /
                              std::pow(2 * v_1 - track_width * omega_1, 2),
-             partial_g_omege_0 = (4 * dist_front_to_rear * v_0) /
+             partial_g_omega_0 = (4 * dist_front_to_rear * v_0) /
                                  std::pow(2 * v_0 - track_width * omega_0, 2),
-             partial_g_omege_1 = (4 * dist_front_to_rear * v_1) /
+             partial_g_omega_1 = (4 * dist_front_to_rear * v_1) /
                                  std::pow(2 * v_1 - track_width * omega_1, 2);
       double partial_h_v_0 =
-                 (std::pow(g_1, 2) * partial_g_v_0 + partial_g_v_0) /
+                 -(std::pow(g_1, 2) * partial_g_v_0 + partial_g_v_0) /
                  std::pow(1 + g_1 * g_0, 2),
              partial_h_v_1 =
                  (std::pow(g_0, 2) * partial_g_v_1 + partial_g_v_1) /
                  std::pow(1 + g_1 * g_0, 2),
-             partial_h_omege_0 =
-                 (std::pow(g_1, 2) * partial_g_omege_0 + partial_g_omege_0) /
+             partial_h_omega_0 =
+                 -(std::pow(g_1, 2) * partial_g_omega_0 + partial_g_omega_0) /
                  std::pow(1 + g_1 * g_0, 2),
-             partial_h_omege_1 =
-                 (std::pow(g_0, 2) * partial_g_omege_1 + partial_g_omege_1) /
+             partial_h_omega_1 =
+                 (std::pow(g_0, 2) * partial_g_omega_1 + partial_g_omega_1) /
                  std::pow(1 + g_1 * g_0, 2);
       double k = (g_1 - g_0) / (1 + g_1 * g_0) - partial_h_v_0 * v_0 -
-                 partial_h_v_1 * v_1 - partial_h_omege_0 * omega_0 -
-                 partial_h_omege_1 * omega_1;
+                 partial_h_v_1 * v_1 - partial_h_omega_0 * omega_0 -
+                 partial_h_omega_1 * omega_1;
       bound(2 * i, 0) = -std::tan(interval * front_wheel_angle_rate_limit) - k;
       bound(2 * i, 1) = std::tan(interval * front_wheel_angle_rate_limit) - k;
     }
@@ -282,25 +282,25 @@ int main() {
                              std::pow(2 * v_0 + track_width * omega_0, 2),
              partial_g_v_1 = -(4 * dist_front_to_rear * omega_1) /
                              std::pow(2 * v_1 + track_width * omega_1, 2),
-             partial_g_omege_0 = (4 * dist_front_to_rear * v_0) /
+             partial_g_omega_0 = (4 * dist_front_to_rear * v_0) /
                                  std::pow(2 * v_0 + track_width * omega_0, 2),
-             partial_g_omege_1 = (4 * dist_front_to_rear * v_1) /
+             partial_g_omega_1 = (4 * dist_front_to_rear * v_1) /
                                  std::pow(2 * v_1 + track_width * omega_1, 2);
       double partial_h_v_0 =
-                 (std::pow(g_1, 2) * partial_g_v_0 + partial_g_v_0) /
+                 -(std::pow(g_1, 2) * partial_g_v_0 + partial_g_v_0) /
                  std::pow(1 + g_1 * g_0, 2),
              partial_h_v_1 =
                  (std::pow(g_0, 2) * partial_g_v_1 + partial_g_v_1) /
                  std::pow(1 + g_1 * g_0, 2),
-             partial_h_omege_0 =
-                 (std::pow(g_1, 2) * partial_g_omege_0 + partial_g_omege_0) /
+             partial_h_omega_0 =
+                 -(std::pow(g_1, 2) * partial_g_omega_0 + partial_g_omega_0) /
                  std::pow(1 + g_1 * g_0, 2),
-             partial_h_omege_1 =
-                 (std::pow(g_0, 2) * partial_g_omege_1 + partial_g_omege_1) /
+             partial_h_omega_1 =
+                 (std::pow(g_0, 2) * partial_g_omega_1 + partial_g_omega_1) /
                  std::pow(1 + g_1 * g_0, 2);
       double k = (g_1 - g_0) / (1 + g_1 * g_0) - partial_h_v_0 * v_0 -
-                 partial_h_v_1 * v_1 - partial_h_omege_0 * omega_0 -
-                 partial_h_omege_1 * omega_1;
+                 partial_h_v_1 * v_1 - partial_h_omega_0 * omega_0 -
+                 partial_h_omega_1 * omega_1;
       bound(2 * i + 1, 0) =
           -std::tan(interval * front_wheel_angle_rate_limit) - k;
       bound(2 * i + 1, 1) =

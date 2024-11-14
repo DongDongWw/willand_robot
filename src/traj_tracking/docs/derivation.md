@@ -97,10 +97,10 @@ p_k =
 \frac{\partial{h_{k}}}{\partial{\omega_{k+1}}} \\
 \end{bmatrix}
 = \begin{bmatrix}
-\frac{g_{k+1}^2\frac{\partial g_k}{\partial v_{k}} + \frac{\partial g_k}{v_k}}{(1 + g_{k+1}g_{k})^2} \\
-\frac{g_{k+1}^2\frac{\partial g_k}{\partial \omega_{k}} + \frac{\partial g_k}{\omega_k}}{(1 + g_{k+1}g_{k})^2} \\
--\frac{g_{k}^2\frac{\partial g_{k+1}}{\partial v_{k+1}} + \frac{\partial g_{k+1}}{v_{k+1}}}{(1 + g_{k+1}g_{k})^2} \\
--\frac{g_{k}^2\frac{\partial g_{k+1}}{\partial \omega_{k+1}} + \frac{\partial g_{k+1}}{\omega_{k+1}}}{(1 + g_{k+1}g_{k})^2} \\
+-\frac{g_{k+1}^2\frac{\partial g_k}{\partial v_{k}} + \frac{\partial g_k}{v_k}}{(1 + g_{k+1}g_{k})^2} \\
+-\frac{g_{k+1}^2\frac{\partial g_k}{\partial \omega_{k}} + \frac{\partial g_k}{\omega_k}}{(1 + g_{k+1}g_{k})^2} \\
+\frac{g_{k}^2\frac{\partial g_{k+1}}{\partial v_{k+1}} + \frac{\partial g_{k+1}}{v_{k+1}}}{(1 + g_{k+1}g_{k})^2} \\
+\frac{g_{k}^2\frac{\partial g_{k+1}}{\partial \omega_{k+1}} + \frac{\partial g_{k+1}}{\omega_{k+1}}}{(1 + g_{k+1}g_{k})^2} \\
 \end{bmatrix}
 $$
 因此，得到如下线性化不等式约束：
