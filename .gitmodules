@@ -1,6 +1,6 @@
 [submodule "src/traj_tracking/third_party/osqp-eigen"]
 	path = src/traj_tracking/third_party/osqp-eigen
-	url = git@github.com:DongDongWw/osqp-eigen.git
+	url = https://github.com/robotology/osqp-eigen.git
 [submodule "src/traj_tracking/third_party/osqp"]
 	path = src/traj_tracking/third_party/osqp
-	url = git@github.com:DongDongWw/osqp.git
+	url = https://github.com/osqp/osqp.git
