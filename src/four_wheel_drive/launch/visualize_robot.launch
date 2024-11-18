@@ -11,9 +11,7 @@
 
  	<node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen"
     args="joint_state_controller rear_right_velocity_controller rear_left_velocity_controller
-          right_bridge_position_controller left_bridge_position_controller
-          front_right_velocity_controller front_left_velocity_controller"/>
-
+          right_bridge_position_controller left_bridge_position_controller"/>
 
   <param name="use_gui" value="true"/>
 

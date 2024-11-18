@@ -151,7 +151,7 @@ void TrajectoryTracker::calcOsqpConstraintMatrix() {
       nums_of_dynamic = param_.state_size_ * param_.horizon_,
       nums_of_equality_cons = A_equal_.rows() * param_.horizon_,
       nums_of_inequality_cons = A_inequal_.rows() * param_.horizon_,
-      nums_of_state_bounding_box = x_lb_.rows() * param_.horizon_,
+      nums_of_state_bounding_box = x_lb_.rows() * (param_.horizon_ + 1),
       nums_of_input_bounding_box = u_lb_.rows() * param_.horizon_,
       nums_of_customize_cons = P_customize_.rows();
   // pre-allocate
@@ -216,7 +216,7 @@ void TrajectoryTracker::calcOsqpConstraintMatrix() {
     int block_rows = param_.state_size_;
     int start_row_offset = nums_of_initial_state + nums_of_dynamic +
                            nums_of_equality_cons + nums_of_inequality_cons;
-    for (size_t i = 0; i < param_.horizon_; ++i) {
+    for (size_t i = 0; i <= param_.horizon_; ++i) {
       M.block(start_row_offset + i * block_rows, i * param_.state_size_,
               block_rows, param_.state_size_) =
           Eigen::MatrixXd::Identity(param_.state_size_, param_.state_size_);
@@ -264,7 +264,7 @@ void TrajectoryTracker::calcOsqpConstraintBound() {
       nums_of_dynamic = param_.state_size_ * param_.horizon_,
       nums_of_equality_cons = A_equal_.rows() * param_.horizon_,
       nums_of_inequality_cons = A_inequal_.rows() * param_.horizon_,
-      nums_of_state_bounding_box = x_lb_.rows() * param_.horizon_,
+      nums_of_state_bounding_box = x_lb_.rows() * (param_.horizon_ + 1),
       nums_of_input_bounding_box = u_lb_.rows() * param_.horizon_,
       nums_of_customize_cons = P_customize_.rows();
   int nums_of_cons_rows = nums_of_initial_state + nums_of_dynamic +
@@ -314,7 +314,7 @@ void TrajectoryTracker::calcOsqpConstraintBound() {
     int block_rows = param_.state_size_;
     int start_row_offset = nums_of_initial_state + nums_of_dynamic +
                            nums_of_equality_cons + nums_of_inequality_cons;
-    for (size_t i = 0; i < param_.horizon_; ++i) {
+    for (size_t i = 0; i <= param_.horizon_; ++i) {
       lb_.segment(start_row_offset + i * block_rows, block_rows) = x_lb_;
       ub_.segment(start_row_offset + i * block_rows, block_rows) = x_ub_;
     }
@@ -391,11 +391,16 @@ bool TrajectoryTracker::setReferenceTrajectory(const Trajectory2D &refer_traj) {
     Point2d B = refer_state_seq_.at(i).segment<2>(0);
     Point2d C = refer_state_seq_.at(i + 1).segment<2>(0);
     Vector2d ab = B - A, ac = C - A, bc = C - B;
-    double angle_included =
-        std::acos(ab.dot(ac) / (ab.norm() * ac.norm() + kEps));
-    double radius = std::abs(bc.norm() / 2 / std::sin(angle_included));
-    double omega = refer_state_seq_.at(i)(3) / radius;
-    refer_input(0) = omega;
+    if (ab.norm() > 1e-6 && ac.norm() > 1e-6) {
+      double angle_included =
+          std::acos(ab.dot(ac) / (ab.norm() * ac.norm() + kEps));
+      double radius =
+          std::abs(bc.norm() / (2 * std::sin(angle_included) + kEps));
+      double omega = refer_state_seq_.at(i)(3) / radius;
+      refer_input(0) = omega;
+    } else {
+      refer_input(0) = 0.0;
+    }
   }
   // the first input vector is not yet be calculated
   refer_input_seq_.front() = refer_input_seq_.at(1);

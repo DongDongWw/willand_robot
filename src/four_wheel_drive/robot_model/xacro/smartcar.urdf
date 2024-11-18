@@ -708,7 +708,7 @@
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
   </transmission>
-  <transmission name="right_front_wheel_joint_trans">
+  <!-- <transmission name="right_front_wheel_joint_trans">
     <type>transmission_interface/SimpleTransmission</type>
     <joint name="right_front_wheel_to_bridge">
       <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
@@ -727,7 +727,7 @@
       <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
-  </transmission>
+  </transmission> -->
   <!-- Friction Parametres -->
   <!--
 	<gazebo reference="left_bridge">
