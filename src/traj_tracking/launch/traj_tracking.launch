@@ -44,6 +44,23 @@
 	<arg name="rvizconfig" default="$(find steer_bot_viz)/rviz/steer_bot_robot.rviz" />
 	<node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" output="screen" />
 	<!-- traj_tracking -->
-	<param name="/global_circle_radius" value="2.0" />
-	<node pkg="traj_tracking" type="traj_tracking_gazebo" name="traj_tracking_node" output="screen" />
+	<node pkg="traj_tracking" type="traj_tracking_sim" name="traj_tracking" output="screen">
+		<param name="~global_circle_radius" value="-1.0" />
+		<param name="~horizon" value="20" />
+		<param name="~interval" value="0.02" />
+		<param name="~state_size" value="3" />
+		<param name="~input_size" value="2" />
+		<param name="~speed_limit" value="1.5" />
+		<param name="~acc_limit" value="1.5" />
+		<param name="~front_wheel_angle_limit" value="1.5708" />
+		<param name="~front_wheel_angle_rate_limit" value="1.5708" />
+		<param name="~track_width" value="0.4" />
+		<param name="~dist_front_to_rear" value="0.4" />
+		<!-- weights of cost function -->
+		<param name="~weight_x_error" value="3333.3" />
+		<param name="~weight_y_error" value="3333.3" />
+		<param name="~weight_theta_error" value="55.55" />
+		<param name="~weight_v" value="63.33" />
+		<param name="~weight_omega" value="63.33" />
+	</node>
 </launch>

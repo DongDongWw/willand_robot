@@ -75,19 +75,13 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${PB_CXX_DIR}
 )
-add_executable(${PROJECT_NAME}_example
-  src/example.cpp
-  src/trajectory_tracker.cpp
-)
-target_link_libraries(${PROJECT_NAME}_example
-  OsqpEigen::OsqpEigen
-)
-add_executable(${PROJECT_NAME}_gazebo
-  src/traj_tracking_gazebo.cpp
+
+add_executable(${PROJECT_NAME}_sim
+  src/traj_tracking_sim.cpp
   src/trajectory_tracker.cpp
   ${PROTO_SRC}
 )
-target_link_libraries(${PROJECT_NAME}_gazebo
+target_link_libraries(${PROJECT_NAME}_sim
   ${catkin_LIBRARIES}
   OsqpEigen::OsqpEigen
   protobuf::libprotobuf
