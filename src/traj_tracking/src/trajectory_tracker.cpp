@@ -8,7 +8,10 @@ TrackerParam::TrackerParam(int horizon, double interval, int state_size,
                            int input_size, double speed_limit, double acc_limit,
                            double front_wheel_angle_limit,
                            double front_wheel_angle_rate_limit,
-                           double track_width, double dist_front_to_rear)
+                           double weight_x_error, double weight_y_error,
+                           double weight_theta_error, double weight_v,
+                           double weight_omega, double track_width,
+                           double dist_front_to_rear)
     : horizon_(horizon),
       interval_(interval),
       state_size_(state_size),
@@ -17,6 +20,11 @@ TrackerParam::TrackerParam(int horizon, double interval, int state_size,
       acc_limit_(acc_limit),
       front_wheel_angle_limit_(front_wheel_angle_limit),
       front_wheel_angle_rate_limit_(front_wheel_angle_rate_limit),
+      weight_x_error_(weight_x_error),
+      weight_y_error_(weight_y_error),
+      weight_theta_error_(weight_theta_error),
+      weight_v_(weight_v),
+      weight_omega_(weight_omega),
       track_width_(track_width),
       dist_front_to_rear_(dist_front_to_rear) {}
 
@@ -48,11 +56,11 @@ bool TrajectoryTracker::update(const Vector3d &init_state,
   setSteerRateConstraints();
 
   // cast everything need
-  CastProblemToQpForm();
+  castProblemToQpForm();
   return true;
 }
 
-bool TrajectoryTracker::solve(DVector &solution) {
+SolveStatus TrajectoryTracker::solve(DVector &solution) {
   // instantiate the solver
   OsqpEigen::Solver solver;
 
@@ -63,38 +71,38 @@ bool TrajectoryTracker::solve(DVector &solution) {
   // set the initial data of the QP solver
   solver.data()->setNumberOfVariables(qp_state_size_);
   if (!solver.data()->setHessianMatrix(H_)) {
-    return false;
+    return SolveStatus::SOLVER_SET_HESSIAN_ERROR;
   }
   if (!solver.data()->setGradient(g_)) {
-    return false;
+    return SolveStatus::SOLVER_SET_GRADIENT_ERROR;
   }
 
   solver.data()->setNumberOfConstraints(M_.rows());
   if (!solver.data()->setLinearConstraintsMatrix(M_)) {
-    return false;
+    return SolveStatus::SOLVER_SET_CONSTRAINT_MATRIX_ERROR;
   }
   if (!solver.data()->setLowerBound(lb_)) {
-    return false;
+    return SolveStatus::SOLVER_SET_CONSTRAINT_BOUND_ERROR;
   }
   if (!solver.data()->setUpperBound(ub_)) {
-    return false;
+    return SolveStatus::SOLVER_SET_CONSTRAINT_BOUND_ERROR;
   }
 
   // instantiate the solver
   if (!solver.initSolver()) {
-    return false;
+    return SolveStatus::SOLVER_INIT_ERROR;
   }
   if (solver.solveProblem() != OsqpEigen::ErrorExitFlag::NoError) {
-    std::cout << "Osqp solver inner error" << std::endl;
-    return false;
+    return SolveStatus::SOLVER_INNER_ERROR;
   }
   // get the controller input
   solution = solver.getSolution();
 
-  return true;
+  // post check
+  return posterioriCheck(solution);
 }
 
-void TrajectoryTracker::CastProblemToQpForm() {
+void TrajectoryTracker::castProblemToQpForm() {
   calcOsqpHession();
   calcOsqpGradient();
   calcOsqpConstraintMatrix();
@@ -370,7 +378,6 @@ bool TrajectoryTracker::setReferenceTrajectory(const Trajectory2D &refer_traj) {
       }
     } else {
       yaw = std::atan2(delta_y, (delta_x + kEps));
-      // yaw = delta_x > 0 ? yaw : delta_y > 0 ? yaw + M_PI : yaw - M_PI;
     }
 
     // avoid the yaw angle jump
@@ -652,26 +659,6 @@ TrajectoryTracker::accelerateConstraintsBoundCaster() {
   }
   return bound;
 }
-void TrajectoryTracker::printRefereceStateSeq() {
-  Eigen::IOFormat CleanFmt(4, Eigen::DontAlignCols, ", ", "", "(", ")");
-  for (size_t i = 0; i <= param_.horizon_; ++i) {
-    std::cout << std::fixed << std::setprecision(2) << std::setw(4)
-              << std::showpos << "time stamp = " << i * param_.interval_
-              << ", reference state = "
-              << refer_state_seq_.at(i).transpose().format(CleanFmt)
-              << std::endl;
-  }
-}
-void TrajectoryTracker::printRefereceInputSeq() {
-  Eigen::IOFormat CleanFmt(4, Eigen::DontAlignCols, ", ", "", "(", ")");
-  for (size_t i = 0; i < param_.horizon_; ++i) {
-    std::cout << std::fixed << std::setprecision(2) << std::setw(4)
-              << std::showpos << "time stamp = " << i * param_.interval_
-              << ", reference state = "
-              << refer_input_seq_.at(i).transpose().format(CleanFmt)
-              << std::endl;
-  }
-}
 void TrajectoryTracker::getReferenceStateAndInputSeq(
     Trajectory3D &refer_state_seq, Trajectory2D &refer_input_seq) {
   refer_state_seq = refer_state_seq_;
@@ -679,8 +666,124 @@ void TrajectoryTracker::getReferenceStateAndInputSeq(
 }
 void TrajectoryTracker::getCurrentReferStateAndInput(Vector3d &refer_state,
                                                      Vector2d &refer_input) {
+  if (refer_state_seq_.empty() || refer_input_seq_.empty()) {
+    refer_state = Vector3d::Zero();
+    refer_input = Vector2d::Zero();
+    return;
+  }
   refer_state = refer_state_seq_.front();
   refer_input = refer_input_seq_.front();
+  return;
+}
+
+SolveStatus TrajectoryTracker::posterioriCheck(const DVector &solution) {
+  // check the velocity constraints
+  auto check_speed_feasibility = [&]() -> bool {
+    for (size_t i = 0; i < param_.horizon_; ++i) {
+      double v = solution((param_.horizon_ + 1) * param_.state_size_ +
+                          i * param_.input_size_);
+      if (v < -param_.speed_limit_ - kEps && v > param_.speed_limit_ + kEps) {
+        return false;
+      }
+    }
+    return true;
+  };
+  // check the acceleration constraints
+  auto check_acc_feasibility = [&]() -> bool {
+    for (size_t i = 0; i < param_.horizon_ - 1; ++i) {
+      double v = solution((param_.horizon_ + 1) * param_.state_size_ +
+                          i * param_.input_size_);
+      double v_nxt = solution((param_.horizon_ + 1) * param_.state_size_ +
+                              (i + 1) * param_.input_size_);
+      double acc = (v_nxt - v) / param_.interval_;
+      if (acc < -param_.acc_limit_ - kEps && acc > param_.acc_limit_ + kEps) {
+        return false;
+      }
+    }
+    return true;
+  };
+  // check the steer angle constraints
+  auto check_steer_angle_feasibility = [&]() -> bool {
+    for (size_t i = 0; i < param_.horizon_; ++i) {
+      double v = solution((param_.horizon_ + 1) * param_.state_size_ +
+                          i * param_.input_size_);
+      double omega = solution((param_.horizon_ + 1) * param_.state_size_ +
+                              i * param_.input_size_ + 1);
+      double radius_left = v / omega - param_.track_width_ / 2,
+             radius_right = v / omega + param_.track_width_ / 2;
+      double angle_left = std::atan(param_.dist_front_to_rear_ / radius_left),
+             angle_right = std::atan(param_.dist_front_to_rear_ / radius_right);
+      constexpr double tolerance = 0.1735;  // 10 degree error is allowed
+      if (angle_left < -param_.front_wheel_angle_limit_ - tolerance ||
+          angle_left > param_.front_wheel_angle_limit_ + tolerance ||
+          angle_right < -param_.front_wheel_angle_limit_ - tolerance ||
+          angle_right > param_.front_wheel_angle_limit_ + tolerance) {
+        std::cout << "angle limit = " << param_.front_wheel_angle_limit_
+                  << ", angle_left = " << angle_left
+                  << ", angle_right = " << angle_right
+                  << ", dist_front_to_rear = " << param_.dist_front_to_rear_
+                  << ", radius_left = " << radius_left
+                  << ", radius_right = " << radius_right << std::endl;
+        return false;
+      }
+    }
+    return true;
+  };
+
+  // check the steer angle rate constraints
+  auto check_steer_angle_rate_feasibility = [&]() -> bool {
+    for (size_t i = 0; i < param_.horizon_ - 1; ++i) {
+      double v_0 = solution((param_.horizon_ + 1) * param_.state_size_ +
+                            i * param_.input_size_);
+      double v_1 = solution((param_.horizon_ + 1) * param_.state_size_ +
+                            (i + 1) * param_.input_size_);
+      double omega_0 = solution((param_.horizon_ + 1) * param_.state_size_ +
+                                i * param_.input_size_ + 1);
+      double omega_1 = solution((param_.horizon_ + 1) * param_.state_size_ +
+                                (i + 1) * param_.input_size_ + 1);
+      double radius_left_0 = v_0 / omega_0 - param_.track_width_ / 2,
+             radius_right_0 = v_0 / omega_0 + param_.track_width_ / 2,
+             radius_left_1 = v_1 / omega_1 - param_.track_width_ / 2,
+             radius_right_1 = v_1 / omega_1 + param_.track_width_ / 2;
+      double angle_left_0 =
+                 std::atan(param_.dist_front_to_rear_ / radius_left_0),
+             angle_right_0 =
+                 std::atan(param_.dist_front_to_rear_ / radius_right_0),
+             angle_left_1 =
+                 std::atan(param_.dist_front_to_rear_ / radius_left_1),
+             angle_right_1 =
+                 std::atan(param_.dist_front_to_rear_ / radius_right_1);
+      double angle_rate_left = (angle_left_1 - angle_left_0) / param_.interval_,
+             angle_rate_right =
+                 (angle_right_1 - angle_right_0) / param_.interval_;
+      constexpr double tolerance =
+          0.1735;  // 10 degree per sec error is allowed
+      if (angle_rate_left < -param_.front_wheel_angle_rate_limit_ - tolerance ||
+          angle_rate_left > param_.front_wheel_angle_rate_limit_ + tolerance ||
+          angle_rate_right <
+              -param_.front_wheel_angle_rate_limit_ - tolerance ||
+          angle_rate_right > param_.front_wheel_angle_rate_limit_ + tolerance) {
+        double refer_v_0 = refer_input_seq_.at(i)(0),
+               refer_omega_0 = refer_input_seq_.at(i)(1);
+        double refer_v_1 = refer_input_seq_.at(i + 1)(0),
+               refer_omega_1 = refer_input_seq_.at(i + 1)(1);
+        return false;
+      }
+    }
+    return true;
+  };
+
+  if (!check_speed_feasibility()) {
+    return SolveStatus::INVALID_SPEED;
+  } else if (!check_acc_feasibility()) {
+    return SolveStatus::INVALID_ACC;
+  } else if (!check_steer_angle_feasibility()) {
+    return SolveStatus::INVALID_STEER_ANGLE;
+  } else if (!check_steer_angle_rate_feasibility()) {
+    return SolveStatus::INVALID_STEER_RATE;
+  }
+
+  return SolveStatus::SUCCESS;
 }
 
 };  // namespace willand_ackermann

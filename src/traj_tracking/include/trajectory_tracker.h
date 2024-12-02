@@ -1,8 +1,5 @@
 #pragma once
 #include <cmath>
-#include <functional>
-#include <iomanip>
-#include <ios>
 #include <iostream>
 #include <limits>
 #include <memory>
@@ -13,6 +10,21 @@
 
 #define kEps 2.333e-33
 namespace willand_ackermann {
+enum class SolveStatus {
+  SUCCESS = 0x00000000,
+  // solver inner error
+  SOLVER_INIT_ERROR = 0x00000001,
+  SOLVER_INNER_ERROR,
+  SOLVER_SET_HESSIAN_ERROR,
+  SOLVER_SET_GRADIENT_ERROR,
+  SOLVER_SET_CONSTRAINT_MATRIX_ERROR,
+  SOLVER_SET_CONSTRAINT_BOUND_ERROR,
+  // infeasible solution
+  INVALID_SPEED = 0x00010000,
+  INVALID_ACC,
+  INVALID_STEER_ANGLE,
+  INVALID_STEER_RATE,
+};
 struct TrackerParam {
   // mpc parameters
   int horizon_;
@@ -23,6 +35,8 @@ struct TrackerParam {
   double acc_limit_;
   double front_wheel_angle_limit_;
   double front_wheel_angle_rate_limit_;
+  double weight_x_error_, weight_y_error_, weight_theta_error_;
+  double weight_v_, weight_omega_;
   // vehicle parameters
   double track_width_;
   double dist_front_to_rear_;
@@ -36,12 +50,19 @@ struct TrackerParam {
         acc_limit_(1.0),
         front_wheel_angle_limit_(M_PI / 4),
         front_wheel_angle_rate_limit_(M_PI / 8),
+        weight_x_error_(1.0),
+        weight_y_error_(1.0),
+        weight_theta_error_(1.0),
+        weight_v_(1.0),
+        weight_omega_(1.0),
         track_width_(0.5),
         dist_front_to_rear_(0.8) {}
   TrackerParam(int horizon, double interval, int state_size, int input_size,
                double speed_limit, double acc_limit,
                double front_wheel_angle_limit,
-               double front_wheel_angle_rate_limit, double track_width,
+               double front_wheel_angle_rate_limit, double weight_x_error,
+               double weight_y_error, double weight_theta_error,
+               double weight_v, double weight_omega, double track_width,
                double dist_front_to_rear);
 };
 class TrajectoryTracker {
@@ -106,8 +127,9 @@ class TrajectoryTracker {
   void setWeightMatrices() {
     Q_.resize(param_.state_size_, param_.state_size_);
     R_.resize(param_.input_size_, param_.input_size_);
-    Q_ << 2333.3, 0.0, 0.0, 0.0, 2333.3, 0.0, 0.0, 0.0, 111.1;
-    R_ << 111.11, 0.0, 0.0, 111.11;
+    Q_ << param_.weight_x_error_, 0.0, 0.0, 0.0, param_.weight_y_error_, 0.0,
+        0.0, 0.0, param_.weight_theta_error_;
+    R_ << param_.weight_v_, 0.0, 0.0, param_.weight_omega_;
   }
 
   DMatrix dynamicStateMatrixCaster(const Vector3d &state,
@@ -176,19 +198,18 @@ class TrajectoryTracker {
     lb_accelerate_ = b.col(0);
     ub_accelerate_ = b.col(1);
   }
-  void CastProblemToQpForm();
+  void castProblemToQpForm();
+  SolveStatus posterioriCheck(const DVector &solution);
 
  public:
   TrajectoryTracker(const TrackerParam &param);
 
   bool update(const Vector3d &init_state, const Trajectory2D &reference_traj);
-  bool solve(DVector &solution);
+  SolveStatus solve(DVector &solution);
   void getReferenceStateAndInputSeq(Trajectory3D &refer_state_seq,
                                     Trajectory2D &refer_input_seq);
   void getCurrentReferStateAndInput(Vector3d &refer_state,
                                     Vector2d &refer_input);
-  void printRefereceStateSeq();
-  void printRefereceInputSeq();
 };
 
 }  // namespace willand_ackermann
