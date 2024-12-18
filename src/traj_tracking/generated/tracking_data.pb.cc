@@ -144,12 +144,14 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::simple_ackermann_proto::ParamMPC, interval_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::simple_ackermann_proto::ParamMPC, state_dim_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::simple_ackermann_proto::ParamMPC, input_dim_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::simple_ackermann_proto::ParamMPC, speed_limit_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::simple_ackermann_proto::ParamMPC, acc_limit_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::simple_ackermann_proto::ParamMPC, front_wheel_angle_limit_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::simple_ackermann_proto::ParamMPC, front_wheel_angle_rate_limit_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::simple_ackermann_proto::ParamMPC, max_vel_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::simple_ackermann_proto::ParamMPC, min_vel_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::simple_ackermann_proto::ParamMPC, max_acc_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::simple_ackermann_proto::ParamMPC, min_acc_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::simple_ackermann_proto::ParamMPC, steer_angle_rate_limit_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::simple_ackermann_proto::ParamMPC, min_turn_radius_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::simple_ackermann_proto::ParamMPC, track_width_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::simple_ackermann_proto::ParamMPC, dist_front_to_rear_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::simple_ackermann_proto::ParamMPC, wheel_base_),
   ~0u,  // no _has_bits_
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::simple_ackermann_proto::TrackingData, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -166,7 +168,7 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 0, -1, sizeof(::simple_ackermann_proto::State)},
   { 11, -1, sizeof(::simple_ackermann_proto::ControlSignal)},
   { 19, -1, sizeof(::simple_ackermann_proto::ParamMPC)},
-  { 34, -1, sizeof(::simple_ackermann_proto::TrackingData)},
+  { 36, -1, sizeof(::simple_ackermann_proto::TrackingData)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -201,23 +203,24 @@ void AddDescriptorsImpl() {
       "proto\"U\n\005State\022\t\n\001x\030\001 \001(\001\022\t\n\001y\030\002 \001(\001\022\r\n\005"
       "theta\030\003 \001(\001\022\t\n\001v\030\004 \001(\001\022\r\n\005omega\030\005 \001(\001\022\r\n"
       "\005kappa\030\006 \001(\001\"8\n\rControlSignal\022\t\n\001v\030\001 \001(\001"
-      "\022\r\n\005omega\030\002 \001(\001\022\r\n\005kappa\030\003 \001(\001\"\363\001\n\010Param"
+      "\022\r\n\005omega\030\002 \001(\001\022\r\n\005kappa\030\003 \001(\001\"\371\001\n\010Param"
       "MPC\022\017\n\007horizon\030\001 \001(\r\022\020\n\010interval\030\002 \001(\001\022\021"
-      "\n\tstate_dim\030\003 \001(\r\022\021\n\tinput_dim\030\004 \001(\r\022\023\n\013"
-      "speed_limit\030\005 \001(\001\022\021\n\tacc_limit\030\006 \001(\001\022\037\n\027"
-      "front_wheel_angle_limit\030\007 \001(\001\022$\n\034front_w"
-      "heel_angle_rate_limit\030\010 \001(\001\022\023\n\013track_wid"
-      "th\030\t \001(\001\022\032\n\022dist_front_to_rear\030\n \001(\001\"\220\002\n"
-      "\014TrackingData\022\016\n\006length\030\001 \001(\r\022\021\n\ttimesta"
-      "mp\030\002 \003(\t\0225\n\016reference_data\030\003 \003(\0132\035.simpl"
-      "e_ackermann_proto.State\0222\n\013actual_data\030\004"
-      " \003(\0132\035.simple_ackermann_proto.State\022=\n\016c"
-      "ontrol_signal\030\005 \003(\0132%.simple_ackermann_p"
-      "roto.ControlSignal\0223\n\tmpc_param\030\006 \001(\0132 ."
-      "simple_ackermann_proto.ParamMPCb\006proto3"
+      "\n\tstate_dim\030\003 \001(\r\022\021\n\tinput_dim\030\004 \001(\r\022\017\n\007"
+      "max_vel\030\005 \001(\001\022\017\n\007min_vel\030\006 \001(\001\022\017\n\007max_ac"
+      "c\030\007 \001(\001\022\017\n\007min_acc\030\010 \001(\001\022\036\n\026steer_angle_"
+      "rate_limit\030\t \001(\001\022\027\n\017min_turn_radius\030\n \001("
+      "\001\022\023\n\013track_width\030\013 \001(\001\022\022\n\nwheel_base\030\014 \001"
+      "(\001\"\220\002\n\014TrackingData\022\016\n\006length\030\001 \001(\r\022\021\n\tt"
+      "imestamp\030\002 \003(\t\0225\n\016reference_data\030\003 \003(\0132\035"
+      ".simple_ackermann_proto.State\0222\n\013actual_"
+      "data\030\004 \003(\0132\035.simple_ackermann_proto.Stat"
+      "e\022=\n\016control_signal\030\005 \003(\0132%.simple_acker"
+      "mann_proto.ControlSignal\0223\n\tmpc_param\030\006 "
+      "\001(\0132 .simple_ackermann_proto.ParamMPCb\006p"
+      "roto3"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 719);
+      descriptor, 725);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "tracking_data.proto", &protobuf_RegisterTypes);
 }
@@ -936,12 +939,14 @@ const int ParamMPC::kHorizonFieldNumber;
 const int ParamMPC::kIntervalFieldNumber;
 const int ParamMPC::kStateDimFieldNumber;
 const int ParamMPC::kInputDimFieldNumber;
-const int ParamMPC::kSpeedLimitFieldNumber;
-const int ParamMPC::kAccLimitFieldNumber;
-const int ParamMPC::kFrontWheelAngleLimitFieldNumber;
-const int ParamMPC::kFrontWheelAngleRateLimitFieldNumber;
+const int ParamMPC::kMaxVelFieldNumber;
+const int ParamMPC::kMinVelFieldNumber;
+const int ParamMPC::kMaxAccFieldNumber;
+const int ParamMPC::kMinAccFieldNumber;
+const int ParamMPC::kSteerAngleRateLimitFieldNumber;
+const int ParamMPC::kMinTurnRadiusFieldNumber;
 const int ParamMPC::kTrackWidthFieldNumber;
-const int ParamMPC::kDistFrontToRearFieldNumber;
+const int ParamMPC::kWheelBaseFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 ParamMPC::ParamMPC()
@@ -1067,66 +1072,94 @@ bool ParamMPC::MergePartialFromCodedStream(
         break;
       }
 
-      // double speed_limit = 5;
+      // double max_vel = 5;
       case 5: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(41u /* 41 & 0xFF */)) {
 
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
-                 input, &speed_limit_)));
+                 input, &max_vel_)));
         } else {
           goto handle_unusual;
         }
         break;
       }
 
-      // double acc_limit = 6;
+      // double min_vel = 6;
       case 6: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(49u /* 49 & 0xFF */)) {
 
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
-                 input, &acc_limit_)));
+                 input, &min_vel_)));
         } else {
           goto handle_unusual;
         }
         break;
       }
 
-      // double front_wheel_angle_limit = 7;
+      // double max_acc = 7;
       case 7: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(57u /* 57 & 0xFF */)) {
 
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
-                 input, &front_wheel_angle_limit_)));
+                 input, &max_acc_)));
         } else {
           goto handle_unusual;
         }
         break;
       }
 
-      // double front_wheel_angle_rate_limit = 8;
+      // double min_acc = 8;
       case 8: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(65u /* 65 & 0xFF */)) {
 
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
-                 input, &front_wheel_angle_rate_limit_)));
+                 input, &min_acc_)));
         } else {
           goto handle_unusual;
         }
         break;
       }
 
-      // double track_width = 9;
+      // double steer_angle_rate_limit = 9;
       case 9: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(73u /* 73 & 0xFF */)) {
+
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 input, &steer_angle_rate_limit_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // double min_turn_radius = 10;
+      case 10: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(81u /* 81 & 0xFF */)) {
+
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 input, &min_turn_radius_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // double track_width = 11;
+      case 11: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(89u /* 89 & 0xFF */)) {
 
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
@@ -1137,14 +1170,14 @@ bool ParamMPC::MergePartialFromCodedStream(
         break;
       }
 
-      // double dist_front_to_rear = 10;
-      case 10: {
+      // double wheel_base = 12;
+      case 12: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(81u /* 81 & 0xFF */)) {
+            static_cast< ::google::protobuf::uint8>(97u /* 97 & 0xFF */)) {
 
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
-                 input, &dist_front_to_rear_)));
+                 input, &wheel_base_)));
         } else {
           goto handle_unusual;
         }
@@ -1197,34 +1230,44 @@ void ParamMPC::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(4, this->input_dim(), output);
   }
 
-  // double speed_limit = 5;
-  if (this->speed_limit() != 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteDouble(5, this->speed_limit(), output);
+  // double max_vel = 5;
+  if (this->max_vel() != 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteDouble(5, this->max_vel(), output);
   }
 
-  // double acc_limit = 6;
-  if (this->acc_limit() != 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteDouble(6, this->acc_limit(), output);
+  // double min_vel = 6;
+  if (this->min_vel() != 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteDouble(6, this->min_vel(), output);
   }
 
-  // double front_wheel_angle_limit = 7;
-  if (this->front_wheel_angle_limit() != 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteDouble(7, this->front_wheel_angle_limit(), output);
+  // double max_acc = 7;
+  if (this->max_acc() != 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteDouble(7, this->max_acc(), output);
   }
 
-  // double front_wheel_angle_rate_limit = 8;
-  if (this->front_wheel_angle_rate_limit() != 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteDouble(8, this->front_wheel_angle_rate_limit(), output);
+  // double min_acc = 8;
+  if (this->min_acc() != 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteDouble(8, this->min_acc(), output);
   }
 
-  // double track_width = 9;
+  // double steer_angle_rate_limit = 9;
+  if (this->steer_angle_rate_limit() != 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteDouble(9, this->steer_angle_rate_limit(), output);
+  }
+
+  // double min_turn_radius = 10;
+  if (this->min_turn_radius() != 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteDouble(10, this->min_turn_radius(), output);
+  }
+
+  // double track_width = 11;
   if (this->track_width() != 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteDouble(9, this->track_width(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteDouble(11, this->track_width(), output);
   }
 
-  // double dist_front_to_rear = 10;
-  if (this->dist_front_to_rear() != 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteDouble(10, this->dist_front_to_rear(), output);
+  // double wheel_base = 12;
+  if (this->wheel_base() != 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteDouble(12, this->wheel_base(), output);
   }
 
   if ((_internal_metadata_.have_unknown_fields() &&  ::google::protobuf::internal::GetProto3PreserveUnknownsDefault())) {
@@ -1261,34 +1304,44 @@ void ParamMPC::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(4, this->input_dim(), target);
   }
 
-  // double speed_limit = 5;
-  if (this->speed_limit() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(5, this->speed_limit(), target);
+  // double max_vel = 5;
+  if (this->max_vel() != 0) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(5, this->max_vel(), target);
   }
 
-  // double acc_limit = 6;
-  if (this->acc_limit() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(6, this->acc_limit(), target);
+  // double min_vel = 6;
+  if (this->min_vel() != 0) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(6, this->min_vel(), target);
   }
 
-  // double front_wheel_angle_limit = 7;
-  if (this->front_wheel_angle_limit() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(7, this->front_wheel_angle_limit(), target);
+  // double max_acc = 7;
+  if (this->max_acc() != 0) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(7, this->max_acc(), target);
   }
 
-  // double front_wheel_angle_rate_limit = 8;
-  if (this->front_wheel_angle_rate_limit() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(8, this->front_wheel_angle_rate_limit(), target);
+  // double min_acc = 8;
+  if (this->min_acc() != 0) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(8, this->min_acc(), target);
   }
 
-  // double track_width = 9;
+  // double steer_angle_rate_limit = 9;
+  if (this->steer_angle_rate_limit() != 0) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(9, this->steer_angle_rate_limit(), target);
+  }
+
+  // double min_turn_radius = 10;
+  if (this->min_turn_radius() != 0) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(10, this->min_turn_radius(), target);
+  }
+
+  // double track_width = 11;
   if (this->track_width() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(9, this->track_width(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(11, this->track_width(), target);
   }
 
-  // double dist_front_to_rear = 10;
-  if (this->dist_front_to_rear() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(10, this->dist_front_to_rear(), target);
+  // double wheel_base = 12;
+  if (this->wheel_base() != 0) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(12, this->wheel_base(), target);
   }
 
   if ((_internal_metadata_.have_unknown_fields() &&  ::google::protobuf::internal::GetProto3PreserveUnknownsDefault())) {
@@ -1327,33 +1380,43 @@ size_t ParamMPC::ByteSizeLong() const {
         this->state_dim());
   }
 
-  // double speed_limit = 5;
-  if (this->speed_limit() != 0) {
+  // double max_vel = 5;
+  if (this->max_vel() != 0) {
     total_size += 1 + 8;
   }
 
-  // double acc_limit = 6;
-  if (this->acc_limit() != 0) {
+  // double min_vel = 6;
+  if (this->min_vel() != 0) {
     total_size += 1 + 8;
   }
 
-  // double front_wheel_angle_limit = 7;
-  if (this->front_wheel_angle_limit() != 0) {
+  // double max_acc = 7;
+  if (this->max_acc() != 0) {
     total_size += 1 + 8;
   }
 
-  // double front_wheel_angle_rate_limit = 8;
-  if (this->front_wheel_angle_rate_limit() != 0) {
+  // double min_acc = 8;
+  if (this->min_acc() != 0) {
     total_size += 1 + 8;
   }
 
-  // double track_width = 9;
+  // double steer_angle_rate_limit = 9;
+  if (this->steer_angle_rate_limit() != 0) {
+    total_size += 1 + 8;
+  }
+
+  // double min_turn_radius = 10;
+  if (this->min_turn_radius() != 0) {
+    total_size += 1 + 8;
+  }
+
+  // double track_width = 11;
   if (this->track_width() != 0) {
     total_size += 1 + 8;
   }
 
-  // double dist_front_to_rear = 10;
-  if (this->dist_front_to_rear() != 0) {
+  // double wheel_base = 12;
+  if (this->wheel_base() != 0) {
     total_size += 1 + 8;
   }
 
@@ -1400,23 +1463,29 @@ void ParamMPC::MergeFrom(const ParamMPC& from) {
   if (from.state_dim() != 0) {
     set_state_dim(from.state_dim());
   }
-  if (from.speed_limit() != 0) {
-    set_speed_limit(from.speed_limit());
+  if (from.max_vel() != 0) {
+    set_max_vel(from.max_vel());
   }
-  if (from.acc_limit() != 0) {
-    set_acc_limit(from.acc_limit());
+  if (from.min_vel() != 0) {
+    set_min_vel(from.min_vel());
   }
-  if (from.front_wheel_angle_limit() != 0) {
-    set_front_wheel_angle_limit(from.front_wheel_angle_limit());
+  if (from.max_acc() != 0) {
+    set_max_acc(from.max_acc());
   }
-  if (from.front_wheel_angle_rate_limit() != 0) {
-    set_front_wheel_angle_rate_limit(from.front_wheel_angle_rate_limit());
+  if (from.min_acc() != 0) {
+    set_min_acc(from.min_acc());
+  }
+  if (from.steer_angle_rate_limit() != 0) {
+    set_steer_angle_rate_limit(from.steer_angle_rate_limit());
+  }
+  if (from.min_turn_radius() != 0) {
+    set_min_turn_radius(from.min_turn_radius());
   }
   if (from.track_width() != 0) {
     set_track_width(from.track_width());
   }
-  if (from.dist_front_to_rear() != 0) {
-    set_dist_front_to_rear(from.dist_front_to_rear());
+  if (from.wheel_base() != 0) {
+    set_wheel_base(from.wheel_base());
   }
   if (from.input_dim() != 0) {
     set_input_dim(from.input_dim());
@@ -1450,12 +1519,14 @@ void ParamMPC::InternalSwap(ParamMPC* other) {
   swap(interval_, other->interval_);
   swap(horizon_, other->horizon_);
   swap(state_dim_, other->state_dim_);
-  swap(speed_limit_, other->speed_limit_);
-  swap(acc_limit_, other->acc_limit_);
-  swap(front_wheel_angle_limit_, other->front_wheel_angle_limit_);
-  swap(front_wheel_angle_rate_limit_, other->front_wheel_angle_rate_limit_);
+  swap(max_vel_, other->max_vel_);
+  swap(min_vel_, other->min_vel_);
+  swap(max_acc_, other->max_acc_);
+  swap(min_acc_, other->min_acc_);
+  swap(steer_angle_rate_limit_, other->steer_angle_rate_limit_);
+  swap(min_turn_radius_, other->min_turn_radius_);
   swap(track_width_, other->track_width_);
-  swap(dist_front_to_rear_, other->dist_front_to_rear_);
+  swap(wheel_base_, other->wheel_base_);
   swap(input_dim_, other->input_dim_);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }

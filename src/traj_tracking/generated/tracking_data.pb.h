@@ -431,41 +431,53 @@ class ParamMPC : public ::google::protobuf::Message /* @@protoc_insertion_point(
   ::google::protobuf::uint32 state_dim() const;
   void set_state_dim(::google::protobuf::uint32 value);
 
-  // double speed_limit = 5;
-  void clear_speed_limit();
-  static const int kSpeedLimitFieldNumber = 5;
-  double speed_limit() const;
-  void set_speed_limit(double value);
+  // double max_vel = 5;
+  void clear_max_vel();
+  static const int kMaxVelFieldNumber = 5;
+  double max_vel() const;
+  void set_max_vel(double value);
 
-  // double acc_limit = 6;
-  void clear_acc_limit();
-  static const int kAccLimitFieldNumber = 6;
-  double acc_limit() const;
-  void set_acc_limit(double value);
+  // double min_vel = 6;
+  void clear_min_vel();
+  static const int kMinVelFieldNumber = 6;
+  double min_vel() const;
+  void set_min_vel(double value);
 
-  // double front_wheel_angle_limit = 7;
-  void clear_front_wheel_angle_limit();
-  static const int kFrontWheelAngleLimitFieldNumber = 7;
-  double front_wheel_angle_limit() const;
-  void set_front_wheel_angle_limit(double value);
+  // double max_acc = 7;
+  void clear_max_acc();
+  static const int kMaxAccFieldNumber = 7;
+  double max_acc() const;
+  void set_max_acc(double value);
 
-  // double front_wheel_angle_rate_limit = 8;
-  void clear_front_wheel_angle_rate_limit();
-  static const int kFrontWheelAngleRateLimitFieldNumber = 8;
-  double front_wheel_angle_rate_limit() const;
-  void set_front_wheel_angle_rate_limit(double value);
+  // double min_acc = 8;
+  void clear_min_acc();
+  static const int kMinAccFieldNumber = 8;
+  double min_acc() const;
+  void set_min_acc(double value);
 
-  // double track_width = 9;
+  // double steer_angle_rate_limit = 9;
+  void clear_steer_angle_rate_limit();
+  static const int kSteerAngleRateLimitFieldNumber = 9;
+  double steer_angle_rate_limit() const;
+  void set_steer_angle_rate_limit(double value);
+
+  // double min_turn_radius = 10;
+  void clear_min_turn_radius();
+  static const int kMinTurnRadiusFieldNumber = 10;
+  double min_turn_radius() const;
+  void set_min_turn_radius(double value);
+
+  // double track_width = 11;
   void clear_track_width();
-  static const int kTrackWidthFieldNumber = 9;
+  static const int kTrackWidthFieldNumber = 11;
   double track_width() const;
   void set_track_width(double value);
 
-  // double dist_front_to_rear = 10;
-  void clear_dist_front_to_rear();
-  static const int kDistFrontToRearFieldNumber = 10;
-  double dist_front_to_rear() const;
-  void set_dist_front_to_rear(double value);
+  // double wheel_base = 12;
+  void clear_wheel_base();
+  static const int kWheelBaseFieldNumber = 12;
+  double wheel_base() const;
+  void set_wheel_base(double value);
 
   // uint32 input_dim = 4;
   void clear_input_dim();
@@ -480,12 +492,14 @@ class ParamMPC : public ::google::protobuf::Message /* @@protoc_insertion_point(
   double interval_;
   ::google::protobuf::uint32 horizon_;
   ::google::protobuf::uint32 state_dim_;
-  double speed_limit_;
-  double acc_limit_;
-  double front_wheel_angle_limit_;
-  double front_wheel_angle_rate_limit_;
+  double max_vel_;
+  double min_vel_;
+  double max_acc_;
+  double min_acc_;
+  double steer_angle_rate_limit_;
+  double min_turn_radius_;
   double track_width_;
-  double dist_front_to_rear_;
+  double wheel_base_;
   ::google::protobuf::uint32 input_dim_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   friend struct ::protobuf_tracking_5fdata_2eproto::TableStruct;
@@ -869,63 +883,91 @@ inline void ParamMPC::set_input_dim(::google::protobuf::uint32 value) {
   // @@protoc_insertion_point(field_set:simple_ackermann_proto.ParamMPC.input_dim)
 }
 
-// double speed_limit = 5;
-inline void ParamMPC::clear_speed_limit() {
-  speed_limit_ = 0;
+// double max_vel = 5;
+inline void ParamMPC::clear_max_vel() {
+  max_vel_ = 0;
 }
-inline double ParamMPC::speed_limit() const {
-  // @@protoc_insertion_point(field_get:simple_ackermann_proto.ParamMPC.speed_limit)
-  return speed_limit_;
+inline double ParamMPC::max_vel() const {
+  // @@protoc_insertion_point(field_get:simple_ackermann_proto.ParamMPC.max_vel)
+  return max_vel_;
 }
-inline void ParamMPC::set_speed_limit(double value) {
+inline void ParamMPC::set_max_vel(double value) {
   
-  speed_limit_ = value;
-  // @@protoc_insertion_point(field_set:simple_ackermann_proto.ParamMPC.speed_limit)
+  max_vel_ = value;
+  // @@protoc_insertion_point(field_set:simple_ackermann_proto.ParamMPC.max_vel)
 }
 
-// double acc_limit = 6;
-inline void ParamMPC::clear_acc_limit() {
-  acc_limit_ = 0;
+// double min_vel = 6;
+inline void ParamMPC::clear_min_vel() {
+  min_vel_ = 0;
 }
-inline double ParamMPC::acc_limit() const {
-  // @@protoc_insertion_point(field_get:simple_ackermann_proto.ParamMPC.acc_limit)
-  return acc_limit_;
+inline double ParamMPC::min_vel() const {
+  // @@protoc_insertion_point(field_get:simple_ackermann_proto.ParamMPC.min_vel)
+  return min_vel_;
 }
-inline void ParamMPC::set_acc_limit(double value) {
+inline void ParamMPC::set_min_vel(double value) {
   
-  acc_limit_ = value;
-  // @@protoc_insertion_point(field_set:simple_ackermann_proto.ParamMPC.acc_limit)
+  min_vel_ = value;
+  // @@protoc_insertion_point(field_set:simple_ackermann_proto.ParamMPC.min_vel)
 }
 
-// double front_wheel_angle_limit = 7;
-inline void ParamMPC::clear_front_wheel_angle_limit() {
-  front_wheel_angle_limit_ = 0;
+// double max_acc = 7;
+inline void ParamMPC::clear_max_acc() {
+  max_acc_ = 0;
 }
-inline double ParamMPC::front_wheel_angle_limit() const {
-  // @@protoc_insertion_point(field_get:simple_ackermann_proto.ParamMPC.front_wheel_angle_limit)
-  return front_wheel_angle_limit_;
+inline double ParamMPC::max_acc() const {
+  // @@protoc_insertion_point(field_get:simple_ackermann_proto.ParamMPC.max_acc)
+  return max_acc_;
 }
-inline void ParamMPC::set_front_wheel_angle_limit(double value) {
+inline void ParamMPC::set_max_acc(double value) {
   
-  front_wheel_angle_limit_ = value;
-  // @@protoc_insertion_point(field_set:simple_ackermann_proto.ParamMPC.front_wheel_angle_limit)
+  max_acc_ = value;
+  // @@protoc_insertion_point(field_set:simple_ackermann_proto.ParamMPC.max_acc)
 }
 
-// double front_wheel_angle_rate_limit = 8;
-inline void ParamMPC::clear_front_wheel_angle_rate_limit() {
-  front_wheel_angle_rate_limit_ = 0;
+// double min_acc = 8;
+inline void ParamMPC::clear_min_acc() {
+  min_acc_ = 0;
 }
-inline double ParamMPC::front_wheel_angle_rate_limit() const {
-  // @@protoc_insertion_point(field_get:simple_ackermann_proto.ParamMPC.front_wheel_angle_rate_limit)
-  return front_wheel_angle_rate_limit_;
+inline double ParamMPC::min_acc() const {
+  // @@protoc_insertion_point(field_get:simple_ackermann_proto.ParamMPC.min_acc)
+  return min_acc_;
 }
-inline void ParamMPC::set_front_wheel_angle_rate_limit(double value) {
+inline void ParamMPC::set_min_acc(double value) {
   
-  front_wheel_angle_rate_limit_ = value;
-  // @@protoc_insertion_point(field_set:simple_ackermann_proto.ParamMPC.front_wheel_angle_rate_limit)
+  min_acc_ = value;
+  // @@protoc_insertion_point(field_set:simple_ackermann_proto.ParamMPC.min_acc)
 }
 
-// double track_width = 9;
+// double steer_angle_rate_limit = 9;
+inline void ParamMPC::clear_steer_angle_rate_limit() {
+  steer_angle_rate_limit_ = 0;
+}
+inline double ParamMPC::steer_angle_rate_limit() const {
+  // @@protoc_insertion_point(field_get:simple_ackermann_proto.ParamMPC.steer_angle_rate_limit)
+  return steer_angle_rate_limit_;
+}
+inline void ParamMPC::set_steer_angle_rate_limit(double value) {
+  
+  steer_angle_rate_limit_ = value;
+  // @@protoc_insertion_point(field_set:simple_ackermann_proto.ParamMPC.steer_angle_rate_limit)
+}
+
+// double min_turn_radius = 10;
+inline void ParamMPC::clear_min_turn_radius() {
+  min_turn_radius_ = 0;
+}
+inline double ParamMPC::min_turn_radius() const {
+  // @@protoc_insertion_point(field_get:simple_ackermann_proto.ParamMPC.min_turn_radius)
+  return min_turn_radius_;
+}
+inline void ParamMPC::set_min_turn_radius(double value) {
+  
+  min_turn_radius_ = value;
+  // @@protoc_insertion_point(field_set:simple_ackermann_proto.ParamMPC.min_turn_radius)
+}
+
+// double track_width = 11;
 inline void ParamMPC::clear_track_width() {
   track_width_ = 0;
 }
@@ -939,18 +981,18 @@ inline void ParamMPC::set_track_width(double value) {
   // @@protoc_insertion_point(field_set:simple_ackermann_proto.ParamMPC.track_width)
 }
 
-// double dist_front_to_rear = 10;
-inline void ParamMPC::clear_dist_front_to_rear() {
-  dist_front_to_rear_ = 0;
+// double wheel_base = 12;
+inline void ParamMPC::clear_wheel_base() {
+  wheel_base_ = 0;
 }
-inline double ParamMPC::dist_front_to_rear() const {
-  // @@protoc_insertion_point(field_get:simple_ackermann_proto.ParamMPC.dist_front_to_rear)
-  return dist_front_to_rear_;
+inline double ParamMPC::wheel_base() const {
+  // @@protoc_insertion_point(field_get:simple_ackermann_proto.ParamMPC.wheel_base)
+  return wheel_base_;
 }
-inline void ParamMPC::set_dist_front_to_rear(double value) {
+inline void ParamMPC::set_wheel_base(double value) {
   
-  dist_front_to_rear_ = value;
-  // @@protoc_insertion_point(field_set:simple_ackermann_proto.ParamMPC.dist_front_to_rear)
+  wheel_base_ = value;
+  // @@protoc_insertion_point(field_set:simple_ackermann_proto.ParamMPC.wheel_base)
 }
 
 // -------------------------------------------------------------------

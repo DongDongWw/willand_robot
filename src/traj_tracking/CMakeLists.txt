@@ -78,7 +78,7 @@ include_directories(
 
 add_executable(${PROJECT_NAME}_sim
   src/traj_tracking_sim.cpp
-  src/trajectory_tracker.cpp
+  src/mpc_tracker.cpp
   ${PROTO_SRC}
 )
 target_link_libraries(${PROJECT_NAME}_sim

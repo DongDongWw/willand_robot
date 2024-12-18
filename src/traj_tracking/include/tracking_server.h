@@ -3,6 +3,7 @@
 
 #include "geometry_msgs/PoseStamped.h"
 #include "geometry_msgs/Twist.h"
+#include "mpc_tracker.h"
 #include "nav_msgs/Odometry.h"
 #include "path_generator.h"
 #include "ros/duration.h"
@@ -13,25 +14,12 @@
 #include "ros/time.h"
 #include "ros/timer.h"
 #include "tracking_data.pb.h"
-#include "trajectory_tracker.h"
 #include "visualization_msgs/Marker.h"
 namespace simple_ackermann {
 
 class TrackingServer {
  public:
-  TrackingServer(const TrackerParam &mpc_param,
-                 const PathGenerator &curve_generator)
-      : mpc_param_(mpc_param),
-        tracker_(TrajectoryTracker(mpc_param)),
-        curve_generator_(curve_generator) {
-    max_length_record_ = mpc_param.horizon_ * 2;
-    local_traj_pub_interval_ = mpc_param_.interval_;
-
-    current_state_ = Eigen::Vector3d::Zero();
-    current_twist_ = Eigen::Vector2d::Zero();
-  };
-
-  void init(ros::NodeHandle &nh) {
+  TrackingServer(const ros::NodeHandle &nh) : nh_(nh) {
     // remove the old tracking data directory
     const char *directory_path = "/tmp/ros/proto/traj_tracking/";
     std::string rm_cmd =
@@ -45,40 +33,93 @@ class TrackingServer {
     if (result == 0) {
       ROS_INFO("New tracking data directory created");
     }
-    odom_sub_ = nh.subscribe("/steer_bot/ackermann_steering_controller/odom",
-                             50, &TrackingServer::odomCallback, this);
-    nav_point_sub_ = nh.subscribe("/move_base_simple/goal", 10,
-                                  &TrackingServer::targetPointCallback, this);
 
-    timer_global_traj_pub_ =
-        nh.createTimer(ros::Duration(global_traj_pub_interval_),
-                       &TrackingServer::publishGlobalTrajectory, this);
-    timer_local_traj_pub_ =
-        nh.createTimer(ros::Duration(local_traj_pub_interval_),
-                       &TrackingServer::publishLocalTrajectory, this);
-    timer_contol_cmd_pub_ =
-        nh.createTimer(ros::Duration(mpc_param_.interval_),
-                       &TrackingServer::publishControlCommand, this);
+    // params
+    nh_.param("/traj_tracking/global_circle_radius", global_circle_radius_,
+              1.0);
+    nh_.param("/traj_tracking/global_traj_pub_interval",
+              global_traj_pub_interval_, 1.0);
+    nh_.param("/traj_tracking/local_traj_pub_interval",
+              local_traj_pub_interval_, 1.0);
+    nh_.param("/traj_tracking/max_record_length", max_record_length_, 1.0);
+    nh_.param("/traj_tracking/refer_vel", refer_vel_, 1.0);
+    nh_.param("/traj_tracking/use_circle_path", use_circle_path_, false);
+
+    nh_.param("/traj_tracking/horizon", mpc_param_.horizon_, 20);
+    nh_.param("/traj_tracking/interval", mpc_param_.interval_, 0.05);
+    nh_.param("/traj_tracking/state_size", mpc_param_.state_size_, 3);
+    nh_.param("/traj_tracking/input_size", mpc_param_.input_size_, 2);
+    nh_.param("/traj_tracking/weight_x_error", mpc_param_.weight_x_error_,
+              3333.3);
+    nh_.param("/traj_tracking/weight_y_error", mpc_param_.weight_y_error_,
+              3333.3);
+    nh_.param("/traj_tracking/weight_theta_error",
+              mpc_param_.weight_theta_error_, 55.5);
+    nh_.param("/traj_tracking/weight_v", mpc_param_.weight_v_, 63.33);
+    nh_.param("/traj_tracking/weight_omega", mpc_param_.weight_omega_, 63.33);
+    nh_.param("/traj_tracking/max_vel", mpc_param_.max_vel_, 1.5);
+    nh_.param("/traj_tracking/min_vel", mpc_param_.min_vel_, -1.5);
+    nh_.param("/traj_tracking/max_acc", mpc_param_.max_acc_, 1.5);
+    nh_.param("/traj_tracking/min_acc", mpc_param_.min_acc_, -1.5);
+    nh_.param("/traj_tracking/steer_angle_rate_limit",
+              mpc_param_.steer_angle_rate_limit_, M_PI * 2);
+    nh_.param("/traj_tracking/min_turn_radius", mpc_param_.min_turn_radius_,
+              0.3);
+    nh_.param("/traj_tracking/track_width", mpc_param_.track_width_, 0.6);
+    nh_.param("/traj_tracking/wheel_base", mpc_param_.wheel_base_, 1.0);
+    ROS_INFO("horizon: %d, interval: %f, state_size: %d, input_size: %d",
+             mpc_param_.horizon_, mpc_param_.interval_, mpc_param_.state_size_,
+             mpc_param_.input_size_);
+    ROS_INFO(
+        "max_vel: %f, min_vel: %f, max_acc: %f, min_acc: %f, "
+        "steer_angle_rate_limit: %f, min_turn_radius: %f, track_width: %f, "
+        "wheel_base: %f",
+        mpc_param_.max_vel_, mpc_param_.min_vel_, mpc_param_.max_acc_,
+        mpc_param_.min_acc_, mpc_param_.steer_angle_rate_limit_,
+        mpc_param_.min_turn_radius_, mpc_param_.track_width_,
+        mpc_param_.wheel_base_);
+
+    tracker_ptr_.reset(new MpcTracker(mpc_param_));
+    path_generator_ = PathGenerator(mpc_param_.interval_ * refer_vel_);
+
+    odom_sub_ = nh_.subscribe("/steer_bot/ackermann_steering_controller/odom",
+                              50, &TrackingServer::odomCallback, this);
+    nav_point_sub_ = nh_.subscribe("/move_base_simple/goal", 10,
+                                   &TrackingServer::targetPointCallback, this);
     global_traj_pub_ =
-        nh.advertise<visualization_msgs::Marker>("global_traj", 10);
+        nh_.advertise<visualization_msgs::Marker>("global_traj", 10);
     local_traj_pub_ =
-        nh.advertise<visualization_msgs::Marker>("local_traj", 10);
-    twist_cmd_pub_ = nh.advertise<geometry_msgs::Twist>(
+        nh_.advertise<visualization_msgs::Marker>("local_traj", 10);
+    twist_cmd_pub_ = nh_.advertise<geometry_msgs::Twist>(
         "/steer_bot/ackermann_steering_controller/cmd_vel", 10);
 
-    nh.param("/traj_tracking/global_circle_radius", global_circle_radius_, 1.0);
-    // ROS_INFO("global_circle_radius: %lf", global_circle_radius_);
-    // ros::Duration(5.0).sleep();
-    // publishGlobalCircleTrajectory();  // only publish once
-    return;
-  }
+    if (!use_circle_path_) {
+      timer_global_traj_pub_ =
+          nh_.createTimer(ros::Duration(global_traj_pub_interval_),
+                          &TrackingServer::publishGlobalTrajectory, this);
+    } else {
+      publishGlobalCircleTrajectory();
+    }
+    timer_local_traj_pub_ =
+        nh_.createTimer(ros::Duration(local_traj_pub_interval_),
+                        &TrackingServer::publishLocalTrajectory, this);
+    timer_contol_cmd_pub_ =
+        nh_.createTimer(ros::Duration(mpc_param_.interval_),
+                        &TrackingServer::publishControlCommand, this);
+
+    current_state_ = Eigen::Vector3d::Zero();
+    current_twist_ = Eigen::Vector2d::Zero();
+  };
 
  private:
+  ros::NodeHandle nh_;
   const std::string file_path_ = "/tmp/ros/proto/traj_tracking/";
 
   double global_traj_pub_interval_ = 5.0;
   double local_traj_pub_interval_ = 0.10;
   double global_circle_radius_;
+  double refer_vel_;
+  bool use_circle_path_;
   ros::Subscriber odom_sub_;
   ros::Subscriber nav_point_sub_;
   ros::Publisher global_traj_pub_;
@@ -89,15 +130,15 @@ class TrackingServer {
   ros::Timer timer_contol_cmd_pub_;
 
   TrackerParam mpc_param_;
-  TrajectoryTracker tracker_;
-  PathGenerator curve_generator_;
+  MpcTracker::UniquePtr tracker_ptr_;
+  PathGenerator path_generator_;
   Eigen::Vector3d current_state_;
   Eigen::Vector2d current_twist_;
   Eigen::Vector2d target_point_;
   std::vector<PathGenerator::Point2D> global_path_points_;
   std::vector<PathGenerator::Point2D> local_path_points_;
 
-  int max_length_record_;  // cann't record unlimited data
+  double max_record_length_;  // cann't record unlimited data
   simple_ackermann_proto::TrackingData tracking_data_;
 
  private:
@@ -114,7 +155,7 @@ class TrackingServer {
   }
   void targetPointCallback(const geometry_msgs::PoseStamped::ConstPtr &msg) {
     target_point_ << msg->pose.position.x, msg->pose.position.y;
-    global_path_points_ = curve_generator_.getGlobalPath(
+    global_path_points_ = path_generator_.getGlobalPath(
         current_state_.segment(0, 2), target_point_, current_state_(2));
     visualization_msgs::Marker global_traj;
     global_traj.header.frame_id = "odom";
@@ -155,11 +196,11 @@ class TrackingServer {
       p(1) = r * std::sin(theta);
       return p;
     };
-    const double inner_radius = 5, outer_radius = 10;
+    const double inner_radius = 8, outer_radius = 8;
     target_point_ = current_state_.segment(0, 2) +
                     randomPointInAnnulus(inner_radius, outer_radius);
     global_path_points_.clear();
-    global_path_points_ = curve_generator_.getGlobalPath(
+    global_path_points_ = path_generator_.getGlobalPath(
         current_state_.segment(0, 2), target_point_, current_state_(2));
     cost_time = (ros::Time::now() - start_time).toSec();
     ROS_INFO("Global path generated, which length = %d, cost time = %lf",
@@ -196,7 +237,7 @@ class TrackingServer {
   }
   void publishGlobalCircleTrajectory() {
     target_point_ = Eigen::Vector2d(0, global_circle_radius_);
-    global_path_points_ = curve_generator_.getGlobalPath(global_circle_radius_);
+    global_path_points_ = path_generator_.getGlobalPath(global_circle_radius_);
     if (global_path_points_.empty()) {
       ROS_ERROR("Failed to generate global path, global circle radius = %lf",
                 global_circle_radius_);
@@ -231,7 +272,7 @@ class TrackingServer {
       // ROS_INFO("Global path is empty");
       return;
     }
-    local_path_points_ = curve_generator_.generateReferenceTrajectory(
+    local_path_points_ = path_generator_.generateReferenceTrajectory(
         current_state_.segment(0, 2), mpc_param_.horizon_ + 1);
     if (local_path_points_.empty()) {
       return;
@@ -272,7 +313,7 @@ class TrackingServer {
     double dist_to_target =
         (current_state_.segment(0, 2) - target_point_).norm();
     double dist_off_path =
-        curve_generator_.getDistOffset(current_state_.segment(0, 2));
+        path_generator_.getDistOffset(current_state_.segment(0, 2));
     geometry_msgs::Twist cmd;
     cmd.linear.x = 0;
     cmd.linear.y = 0;
@@ -298,18 +339,16 @@ class TrackingServer {
       return;
     }
 
-    TrajectoryTracker::DVector solution;
-    tracker_.update(current_state_, local_path_points_);
-    SolveStatus solve_status = tracker_.solve(solution);
+    MpcTracker::Vector2d solution;
+    tracker_ptr_->update(current_state_, local_path_points_);
+    SolveStatus solve_status = tracker_ptr_->solve(solution);
     if (solve_status == SolveStatus::SUCCESS) {
-      cmd.linear.x =
-          solution(mpc_param_.state_size_ * (mpc_param_.horizon_ + 1));
+      cmd.linear.x = solution(0);
       cmd.linear.y = 0;
       cmd.linear.z = 0;
       cmd.angular.x = 0;
       cmd.angular.y = 0;
-      cmd.angular.z =
-          solution(mpc_param_.state_size_ * (mpc_param_.horizon_ + 1) + 1);
+      cmd.angular.z = solution(1);
     } else {
       if (solve_status == SolveStatus::SOLVER_INIT_ERROR) {
         ROS_ERROR("Solver initialization error");
@@ -339,7 +378,7 @@ class TrackingServer {
     // referene state
     Eigen::Vector3d refer_state;
     Eigen::Vector2d refer_input;
-    tracker_.getCurrentReferStateAndInput(refer_state, refer_input);
+    tracker_ptr_->getCurrentReferStateAndInput(refer_state, refer_input);
     // refer traj data
     refer_data_ptr->set_x(refer_state(0));
     refer_data_ptr->set_y(refer_state(1));
@@ -360,7 +399,7 @@ class TrackingServer {
     control_signal_ptr->set_omega(omega);
     control_signal_ptr->set_kappa(omega / v);
 
-    if (tracking_data_.length() == max_length_record_) {
+    if (tracking_data_.length() == max_record_length_ / mpc_param_.interval_) {
       serialize();
       tracking_data_.Clear();
     }
@@ -384,13 +423,14 @@ class TrackingServer {
     mpc_param->set_interval(mpc_param_.interval_);
     mpc_param->set_state_dim(mpc_param_.state_size_);
     mpc_param->set_input_dim(mpc_param_.input_size_);
-    mpc_param->set_speed_limit(mpc_param_.speed_limit_);
-    mpc_param->set_acc_limit(mpc_param_.acc_limit_);
-    mpc_param->set_front_wheel_angle_limit(mpc_param_.front_wheel_angle_limit_);
-    mpc_param->set_front_wheel_angle_rate_limit(
-        mpc_param_.front_wheel_angle_rate_limit_);
+    mpc_param->set_max_vel(mpc_param_.max_vel_);
+    mpc_param->set_min_vel(mpc_param_.min_vel_);
+    mpc_param->set_max_acc(mpc_param_.max_acc_);
+    mpc_param->set_min_acc(mpc_param_.min_acc_);
+    mpc_param->set_steer_angle_rate_limit(mpc_param_.steer_angle_rate_limit_);
+    mpc_param->set_min_turn_radius(mpc_param_.min_turn_radius_);
     mpc_param->set_track_width(mpc_param_.track_width_);
-    mpc_param->set_dist_front_to_rear(mpc_param_.dist_front_to_rear_);
+    mpc_param->set_wheel_base(mpc_param_.wheel_base_);
 
     std::string file_name = file_path_ + "tracking_data_" + time_stamp;
     std::ofstream output_file(file_name, std::ios::out | std::ios::binary);

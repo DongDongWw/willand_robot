@@ -46,21 +46,28 @@
 	<!-- traj_tracking -->
 	<node pkg="traj_tracking" type="traj_tracking_sim" name="traj_tracking" output="screen">
 		<param name="~global_circle_radius" value="0.5" />
+		<param name="~global_traj_pub_interval" value="5" />
+		<param name="~local_traj_pub_interval" value="0.10" />
+		<param name="~max_record_length" value="1.0" />
 		<param name="~horizon" value="20" />
 		<param name="~interval" value="0.02" />
 		<param name="~state_size" value="3" />
 		<param name="~input_size" value="2" />
-		<param name="~speed_limit" value="1.5" />
-		<param name="~acc_limit" value="1.5" />
-		<param name="~front_wheel_angle_limit" value="1.5708" />
-		<param name="~front_wheel_angle_rate_limit" value="6.2832" />
-		<param name="~track_width" value="0.4" />
-		<param name="~dist_front_to_rear" value="0.4" />
+		<param name="~use_circle_path" value="false" />
+		<param name="~refer_vel" value="1.5" />
 		<!-- weights of cost function -->
 		<param name="~weight_x_error" value="3333.3" />
 		<param name="~weight_y_error" value="3333.3" />
 		<param name="~weight_theta_error" value="55.55" />
 		<param name="~weight_v" value="63.33" />
 		<param name="~weight_omega" value="63.33" />
+		<param name="~max_vel" value="1.5" />
+		<param name="~min_vel" value="0.0" />
+		<param name="~max_acc" value="1.5" />
+		<param name="~min_acc" value="-1.5" />
+		<param name="~steer_angle_rate_limit" value="6.2832" />
+		<param name="~min_turn_radius" value="0.3" />
+		<param name="~track_width" value="0.4" />
+		<param name="~wheel_base" value="0.4" />
 	</node>
 </launch>

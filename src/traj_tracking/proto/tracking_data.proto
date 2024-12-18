@@ -20,12 +20,14 @@ message ParamMPC {
     double interval = 2;
     uint32 state_dim = 3;
     uint32 input_dim = 4;
-    double speed_limit = 5;
-    double acc_limit = 6;
-    double front_wheel_angle_limit = 7;
-    double front_wheel_angle_rate_limit = 8;
-    double track_width = 9;
-    double dist_front_to_rear = 10;
+    double max_vel = 5;
+    double min_vel = 6;
+    double max_acc = 7;
+    double min_acc = 8;
+    double steer_angle_rate_limit= 9;
+    double min_turn_radius = 10;
+    double track_width = 11;
+    double wheel_base = 12;
 };
 message TrackingData {
     uint32 length = 1;

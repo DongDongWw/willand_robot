@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='simple_ackermann_proto',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x13tracking_data.proto\x12\x16simple_ackermann_proto\"U\n\x05State\x12\t\n\x01x\x18\x01 \x01(\x01\x12\t\n\x01y\x18\x02 \x01(\x01\x12\r\n\x05theta\x18\x03 \x01(\x01\x12\t\n\x01v\x18\x04 \x01(\x01\x12\r\n\x05omega\x18\x05 \x01(\x01\x12\r\n\x05kappa\x18\x06 \x01(\x01\"8\n\rControlSignal\x12\t\n\x01v\x18\x01 \x01(\x01\x12\r\n\x05omega\x18\x02 \x01(\x01\x12\r\n\x05kappa\x18\x03 \x01(\x01\"\xf3\x01\n\x08ParamMPC\x12\x0f\n\x07horizon\x18\x01 \x01(\r\x12\x10\n\x08interval\x18\x02 \x01(\x01\x12\x11\n\tstate_dim\x18\x03 \x01(\r\x12\x11\n\tinput_dim\x18\x04 \x01(\r\x12\x13\n\x0bspeed_limit\x18\x05 \x01(\x01\x12\x11\n\tacc_limit\x18\x06 \x01(\x01\x12\x1f\n\x17\x66ront_wheel_angle_limit\x18\x07 \x01(\x01\x12$\n\x1c\x66ront_wheel_angle_rate_limit\x18\x08 \x01(\x01\x12\x13\n\x0btrack_width\x18\t \x01(\x01\x12\x1a\n\x12\x64ist_front_to_rear\x18\n \x01(\x01\"\x90\x02\n\x0cTrackingData\x12\x0e\n\x06length\x18\x01 \x01(\r\x12\x11\n\ttimestamp\x18\x02 \x03(\t\x12\x35\n\x0ereference_data\x18\x03 \x03(\x0b\x32\x1d.simple_ackermann_proto.State\x12\x32\n\x0b\x61\x63tual_data\x18\x04 \x03(\x0b\x32\x1d.simple_ackermann_proto.State\x12=\n\x0e\x63ontrol_signal\x18\x05 \x03(\x0b\x32%.simple_ackermann_proto.ControlSignal\x12\x33\n\tmpc_param\x18\x06 \x01(\x0b\x32 .simple_ackermann_proto.ParamMPCb\x06proto3')
+  serialized_pb=_b('\n\x13tracking_data.proto\x12\x16simple_ackermann_proto\"U\n\x05State\x12\t\n\x01x\x18\x01 \x01(\x01\x12\t\n\x01y\x18\x02 \x01(\x01\x12\r\n\x05theta\x18\x03 \x01(\x01\x12\t\n\x01v\x18\x04 \x01(\x01\x12\r\n\x05omega\x18\x05 \x01(\x01\x12\r\n\x05kappa\x18\x06 \x01(\x01\"8\n\rControlSignal\x12\t\n\x01v\x18\x01 \x01(\x01\x12\r\n\x05omega\x18\x02 \x01(\x01\x12\r\n\x05kappa\x18\x03 \x01(\x01\"\xf9\x01\n\x08ParamMPC\x12\x0f\n\x07horizon\x18\x01 \x01(\r\x12\x10\n\x08interval\x18\x02 \x01(\x01\x12\x11\n\tstate_dim\x18\x03 \x01(\r\x12\x11\n\tinput_dim\x18\x04 \x01(\r\x12\x0f\n\x07max_vel\x18\x05 \x01(\x01\x12\x0f\n\x07min_vel\x18\x06 \x01(\x01\x12\x0f\n\x07max_acc\x18\x07 \x01(\x01\x12\x0f\n\x07min_acc\x18\x08 \x01(\x01\x12\x1e\n\x16steer_angle_rate_limit\x18\t \x01(\x01\x12\x17\n\x0fmin_turn_radius\x18\n \x01(\x01\x12\x13\n\x0btrack_width\x18\x0b \x01(\x01\x12\x12\n\nwheel_base\x18\x0c \x01(\x01\"\x90\x02\n\x0cTrackingData\x12\x0e\n\x06length\x18\x01 \x01(\r\x12\x11\n\ttimestamp\x18\x02 \x03(\t\x12\x35\n\x0ereference_data\x18\x03 \x03(\x0b\x32\x1d.simple_ackermann_proto.State\x12\x32\n\x0b\x61\x63tual_data\x18\x04 \x03(\x0b\x32\x1d.simple_ackermann_proto.State\x12=\n\x0e\x63ontrol_signal\x18\x05 \x03(\x0b\x32%.simple_ackermann_proto.ControlSignal\x12\x33\n\tmpc_param\x18\x06 \x01(\x0b\x32 .simple_ackermann_proto.ParamMPCb\x06proto3')
 )
 
 
@@ -172,43 +172,57 @@ _PARAMMPC = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='speed_limit', full_name='simple_ackermann_proto.ParamMPC.speed_limit', index=4,
+      name='max_vel', full_name='simple_ackermann_proto.ParamMPC.max_vel', index=4,
       number=5, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='acc_limit', full_name='simple_ackermann_proto.ParamMPC.acc_limit', index=5,
+      name='min_vel', full_name='simple_ackermann_proto.ParamMPC.min_vel', index=5,
       number=6, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='front_wheel_angle_limit', full_name='simple_ackermann_proto.ParamMPC.front_wheel_angle_limit', index=6,
+      name='max_acc', full_name='simple_ackermann_proto.ParamMPC.max_acc', index=6,
       number=7, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='front_wheel_angle_rate_limit', full_name='simple_ackermann_proto.ParamMPC.front_wheel_angle_rate_limit', index=7,
+      name='min_acc', full_name='simple_ackermann_proto.ParamMPC.min_acc', index=7,
       number=8, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='track_width', full_name='simple_ackermann_proto.ParamMPC.track_width', index=8,
+      name='steer_angle_rate_limit', full_name='simple_ackermann_proto.ParamMPC.steer_angle_rate_limit', index=8,
       number=9, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='dist_front_to_rear', full_name='simple_ackermann_proto.ParamMPC.dist_front_to_rear', index=9,
+      name='min_turn_radius', full_name='simple_ackermann_proto.ParamMPC.min_turn_radius', index=9,
       number=10, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='track_width', full_name='simple_ackermann_proto.ParamMPC.track_width', index=10,
+      number=11, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='wheel_base', full_name='simple_ackermann_proto.ParamMPC.wheel_base', index=11,
+      number=12, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -226,7 +240,7 @@ _PARAMMPC = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=193,
-  serialized_end=436,
+  serialized_end=442,
 )
 
 
@@ -291,8 +305,8 @@ _TRACKINGDATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=439,
-  serialized_end=711,
+  serialized_start=445,
+  serialized_end=717,
 )
 
 _TRACKINGDATA.fields_by_name['reference_data'].message_type = _STATE

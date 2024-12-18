@@ -14,17 +14,50 @@ namespace simple_ackermann {
 class PathGenerator {
  public:
   typedef Eigen::Vector2d Point2D;
-  PathGenerator() = default;
+
+ private:
+  Point2D start_;
+  Point2D end_;
+  double interval_;
+  std::vector<Point2D> points_;
+  Eigen::Matrix<double, 3, 2> coefficients_;
+
+ public:
+  PathGenerator() : interval_(0.05){};
   PathGenerator(double interval) : interval_(interval) {}
   std::vector<Point2D> getGlobalPath(const Point2D &start, const Point2D &end,
                                      double theta) {
-    points_ = getQuadraticCurve(start, end, theta, interval_);
+    start_ = start;
+    end_ = end;
+    generateCoefficients(theta);
+    points_ = std::vector<Point2D>();
+    double t = 0.0;
+    constexpr int max_points_num = 1000;
+    while (std::abs(t - 1.0) > 1e-6 && points_.size() < max_points_num) {
+      points_.push_back(getPoint(t));
+      double next_t = findParameterForArcLength(interval_, t);
+      t = next_t;
+    }
+    points_.push_back(getPoint(t));
     return points_;
   }
   std::vector<Point2D> getGlobalPath(double radius) {
-    points_ = getCircularCurve(radius);
+    points_.clear();
+    double radius_abs = std::abs(radius);
+    double delta_theta = interval_ / radius_abs;
+    // positive radius means turning left, anti-clockwise
+    for (double theta = 0; theta < 2 * M_PI; theta += delta_theta) {
+      double x = radius_abs * std::cos(theta - M_PI / 2);
+      double y = radius_abs * std::sin(theta - M_PI / 2) + radius_abs;
+      if (radius < 0) {
+        y = -y;
+      }
+      points_.push_back(Point2D(x, y));
+    }
     return points_;
   }
+  // TODO: add dubins path
+  // std::vector<Point2D> getGlobalPath(const Point2D &target_point)
   std::vector<Point2D> generateReferenceTrajectory(const Point2D &p,
                                                    int number_of_points) {
     if (points_.empty()) {
@@ -61,52 +94,10 @@ class PathGenerator {
   }
 
  private:
-  Point2D start_;
-  Point2D end_;
-  double interval_;
-  std::vector<Point2D> points_;
-  Eigen::Matrix<double, 3, 2> coefficients_;
-
- private:
-  std::vector<Point2D> getCircularCurve(double radius) {
-    // if (std::abs(radius) < 0.5) {  // too small radius
-    //   return std::vector<Point2D>();
-    // }
-    double radius_abs = std::abs(radius);
-    double delta_theta = interval_ / radius_abs;
-    // positive radius means turning left, anti-clockwise
-    std::vector<Point2D> points;
-    for (double theta = 0; theta < 2 * M_PI; theta += delta_theta) {
-      double x = radius_abs * std::cos(theta - M_PI / 2);
-      double y = radius_abs * std::sin(theta - M_PI / 2) + radius_abs;
-      if (radius < 0) {
-        y = -y;
-      }
-      points.push_back(Point2D(x, y));
-    }
-    return points;
-  }
-  std::vector<Point2D> getQuadraticCurve(const Point2D &start,
-                                         const Point2D &end, double theta,
-                                         double interval) {
-    start_ = start;
-    end_ = end;
-    generateCoefficients(theta);
-    points_ = std::vector<Point2D>();
-    double t = 0.0;
-    constexpr int max_points_num = 1000;
-    while (std::abs(t - 1.0) > 1e-6 && points_.size() < max_points_num) {
-      points_.push_back(getPoint(t));
-      double next_t = findParameterForArcLength(interval, t);
-      t = next_t;
-    }
-    points_.push_back(getPoint(t));
-    return points_;
-  }
   void generateCoefficients(double theta) {
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution<> dis(0.0, 10.0);
+    std::uniform_real_distribution<> dis(2.0, 4.0);
 
     coefficients_(0, 0) = start_(0);
     coefficients_(0, 1) = start_(1);
